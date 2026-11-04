@@ -23,7 +23,28 @@ module OriginChainDB
 
     def failed? = @stopped_on_error || @kind == 'error' || @raw.key?('error') || @results.any?(&:failed?)
 
+    # Map independent row copies through an application constructor or validator.
+    # No partial list is returned if any row fails to map.
+    def map_rows
+      raise ArgumentError, 'Provide a row decoder block' unless block_given?
+      @rows.each_with_index.map do |row, index|
+        begin
+          yield copy_value(row)
+        rescue StandardError => error
+          raise RowDecodeError.new(index), cause: error
+        end
+      end
+    end
+
     private
+    def copy_value(value)
+      case value
+      when Hash then value.transform_values { |item| copy_value(item) }
+      when Array then value.map { |item| copy_value(item) }
+      when String then value.dup
+      else value
+      end
+    end
     def count(value)
       raise Error.new('protocol') unless value.nil? || (value.is_a?(Integer) && value >= 0)
       value
