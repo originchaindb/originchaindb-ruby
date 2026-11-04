@@ -10,6 +10,7 @@ require_relative 'originchaindb/sql_result'
 require_relative 'originchaindb/fts_result'
 require_relative 'originchaindb/vector_hit'
 require_relative 'originchaindb/resources'
+require_relative 'originchaindb/iteration'
 require_relative 'originchaindb/integration'
 
 module OriginChainDB
